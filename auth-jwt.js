@@ -16,9 +16,10 @@ function days2secs(n) {
   return n * 3600 * 24
 }
 
-exports.login = async function(username, passwd) {
+exports.login = async function(username, passwd, debug) {
   username = username || ''
   passwd = passwd || ''
+  let errmsg = 'wrong password.'
 
   try {
     const usr = await db.getUser(username)
@@ -31,8 +32,7 @@ exports.login = async function(username, passwd) {
 
     if (hashpass === usr.hashpass) {
       const epoch = epoch2secs()
-      const later = seconds(10) /* debug */
-      //const later = days2secs(3) /* production */
+      const later = debug ? seconds(10) : days2secs(3)
       const info = {
         exp: epoch + later,
         maxAge: later,
@@ -45,22 +45,26 @@ exports.login = async function(username, passwd) {
       inmemo_user2pass[username] = passwd
       await db.recordLogin(username, true)
       return [true, {info, algorithm, token}]
+
+    } else {
+      await db.recordLogin(username, false)
     }
 
   } catch (err) {
     console.error(err.toString())
-    await db.recordLogin(username, false)
-    return [false, err.toString()]
+    errmsg = err.toString()
   }
 
-  await db.recordLogin(username, false)
-  return [false, 'wrong password.']
+  return [false, errmsg]
 }
 
 exports.verify = async function(token) {
   token = token || ''
-
   try {
+    if (token === '') {
+      throw new Error(`No token to be verified.`)
+    }
+
     const decTok = jwt.decode(token)
     const username = decTok['loggedInAs'] || '';
     const scope = decTok['scope'] || []
