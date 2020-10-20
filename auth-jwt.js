@@ -22,6 +22,11 @@ exports.login = async function(username, passwd) {
 
   try {
     const usr = await db.getUser(username)
+
+    if (usr === undefined) {
+      throw new Error(`No such user: '${username}'`)
+    }
+
     const hashpass = hpass.hashpass(username, passwd, usr.salt)
 
     if (hashpass === usr.hashpass) {
@@ -55,7 +60,11 @@ exports.verify = async function(token) {
     const decTok = jwt.decode(token)
     const username = decTok['loggedInAs'] || '';
     const scope = decTok['scope'] || []
-    const passwd = inmemo_user2pass[username] || '';
+    const passwd = inmemo_user2pass[username];
+
+    if (passwd === undefined) {
+      throw new Error(`No such user: '${username}'`)
+    }
 
     jwt.verify(token, passwd)
     return [true, scope]
