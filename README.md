@@ -16,5 +16,9 @@ $ node db.js
 ```
 $ node ./authd.js
 ```
+you can test the service by
+```
+$ node test/test-authd.js
+```
 
 4. Finally, visit `http://localhost:19721/forbidden/whatever/place` in your browser.
