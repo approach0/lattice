@@ -9,15 +9,17 @@ const app = express()
 const port = 19721
 app.use(bodyParser.json())
 app.use(cookieParser())
+app.use('/test', express.static('./test'))
+
 app.listen(port)
 console.log(`Listening at port ${port}.`)
 
 app
 .post('/login/jwt', async function (req, res) {
-  const reqJson = req.body || {};
-  const username = reqJson.username || '';
-  const password = reqJson.password || '';
-  const debug = reqJson.debug || false;
+  const reqJson = req.body || {}
+  const username = reqJson.username || ''
+  const password = reqJson.password || ''
+  const debug = reqJson.debug || false
 
   console.log('[USER login]', username)
   const [pass, msg] = await jwt_login(username, password, debug)
@@ -31,10 +33,8 @@ app
   }
 
   res.json({ pass, msg })
-
 })
 .post('/verify/jwt', jwt_verify, function (req, res) {
-
   res.json({
     'pass': true
   })

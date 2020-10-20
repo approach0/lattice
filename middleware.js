@@ -15,7 +15,7 @@ exports.jwt_verify = function(req, res, next) {
   .then(ret => {
     const [pass, info] = ret
     if (pass) {
-      next();
+      next()
 
     } else {
       /* failed verification */
