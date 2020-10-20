@@ -4,16 +4,16 @@ const db = require('./db.js')
 
 const inmemo_user2pass = {}
 
-function timestamp_sec() {
+function epoch2secs() {
   return Math.floor(new Date().getTime() / 1000)
 }
 
-function timestamp_nsec_later(n) {
-  return timestamp_sec() + n
+function seconds(n) {
+  return n
 }
 
-function timestamp_nday_later(n) {
-  return timestamp_sec() + (n * 3600 * 24)
+function days2secs(n) {
+  return n * 3600 * 24
 }
 
 exports.login = async function(username, passwd) {
@@ -30,17 +30,21 @@ exports.login = async function(username, passwd) {
     const hashpass = hpass.hashpass(username, passwd, usr.salt)
 
     if (hashpass === usr.hashpass) {
-      const token = jwt.sign({
-        exp: timestamp_nsec_later(10), /* debug */
-        //exp: timestamp_nday_later(3), /* production */
+      const epoch = epoch2secs()
+      const later = seconds(10) /* debug */
+      //const later = days2secs(3) /* production */
+      const info = {
+        exp: epoch + later,
+        maxAge: later,
         loggedInAs: username,
-        scope: ['/*'],
-      }, passwd, {algorithm: 'HS256'})
+        scope: ['/*']
+      }
+      const algorithm = {algorithm: 'HS256'}
+      const token = jwt.sign(info, passwd, algorithm)
 
       inmemo_user2pass[username] = passwd
       await db.recordLogin(username, true)
-      return [true, token]
-
+      return [true, {info, algorithm, token}]
     }
 
   } catch (err) {
@@ -67,7 +71,7 @@ exports.verify = async function(token) {
     }
 
     jwt.verify(token, passwd)
-    return [true, scope]
+    return [true, decTok]
 
   } catch (err) {
     return [false, err.toString()]
@@ -80,7 +84,7 @@ if (require.main === module) {
     const loginRes = await exports.login('admin', 'changeme!')
     console.log(loginRes)
 
-    const verifyRes = await exports.verify(loginRes[1])
+    const verifyRes = await exports.verify(loginRes[1]['token'])
     console.log(verifyRes)
 
     process.exit()
