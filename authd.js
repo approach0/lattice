@@ -1,6 +1,8 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
+const path = require('path');
+
 const jwt_verify = require('./middleware.js').jwt_verify
 const jwt_login = require('./auth-jwt.js').login
 
@@ -9,7 +11,6 @@ const app = express()
 const port = 19721
 app.use(bodyParser.json())
 app.use(cookieParser())
-app.use('/test', express.static('./test'))
 
 app.listen(port)
 console.log(`Listening at port ${port}.`)
@@ -34,8 +35,17 @@ app
 
   res.json({ pass, msg })
 })
+
 .post('/verify/jwt', jwt_verify, function (req, res) {
   res.json({
     'pass': true
   })
+})
+
+/* some test routings */
+.get('/login', async function (req, res) {
+  res.sendFile(path.resolve('./test/login.html'))
+})
+.get('/forbidden/*', jwt_verify, async function (req, res) {
+  res.send('<b>This is a forbidden place!</b>')
 })

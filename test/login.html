@@ -8,37 +8,38 @@ $(document).ready(function () {
   $("#login").click(function() {
     $.ajax({
       method: "POST",
-      url:"/login/jwt",
+      url:"./login/jwt",
       contentType: "application/json; charset=utf-8",
-      dataType: "json" /* expecting data type */,
+      dataType: "json",
       data: JSON.stringify({
         username: $("#username").val(),
-        password: $("#password").val()
+        password: $("#password").val(),
+        debug: true
       })
     }).done(function (ret) {
       $("#retjson").text(JSON.stringify(ret, null, 2))
       if (ret.pass) {
         setTimeout(function () {
-          window.location.replace(getNextURL());
-        }, 1000);
+          window.location.replace(getNextURL())
+        }, 1000)
       }
-    });
-  });
+    })
+  })
 
   function getNextURL() {
-    var parm = window.location.search;
-    var m = parm.match(/next=([^&]+)/) || [];
+    var parm = window.location.search
+    var m = parm.match(/next=([^&]+)/) || []
     if (m[1] == undefined)
-      return '/';
+      return '/'
     else
-      return decodeURIComponent(m[1]);
+      return decodeURIComponent(m[1])
   }
 
-  $('#password').keypress(function(e){
-    if(e.keyCode==13) $('#login').click();
-  });
+  $('#username, #password').keypress(function(e){
+    if(e.keyCode==13) $('#login').click()
+  })
 
-});
+})
 </script>
 </head>
 <body>
@@ -46,8 +47,6 @@ $(document).ready(function () {
   <input  id="username" placeholder="user name"/>
   <input type="password" id="password" placeholder="password"/>
   <button id="login">login</button>
-
-  <p>Return JSON</p>
-  <span id="retjson" style="color:gray"></span>
+  <p id="retjson" style="color:gray"></p>
 </body>
 </html>
