@@ -1,4 +1,7 @@
-var knex = require('knex')({
+const Knex = require('knex')
+const hpass = require('./hashpass')
+
+const knex = Knex({
   client: 'pg',
   connection: {
     host: '0.0.0.0',
@@ -6,7 +9,7 @@ var knex = require('knex')({
     password: 'postgres',
     database: 'postgres'
   }
-});
+})
 
 async function createTable(name, schema) {
   try {
@@ -24,19 +27,55 @@ async function createTable(name, schema) {
 
 async function initTables() {
   await createTable('user', function(table) {
-    table.increments('id').primary()
-    table.string('name', 63)
-    table.text('passwd', 255)
+    table.string('name', 63).unique()
+    table.string('salt', 255).notNullable()
+    table.string('hashpass', 255).notNullable()
     table.timestamps()
+    table.primary('name')
   })
 
   await createTable('login', function(table) {
     table.increments('id').primary()
-    table.integer('userid').unsigned().notNullable()
-    table.timestamps()
+    table.string('name').unsigned().notNullable()
+    table.boolean('success').notNullable()
+    table.datetime('datetime')
   })
-
-  knex.destroy()
 }
 
-initTables()
+exports.getUser = async function(name) {
+  return knex('user').where('name', name).first()
+}
+
+exports.recordLogin = async function(name, success) {
+  return knex('login').insert({
+    name, success,
+    datetime: knex.fn.now()
+  })
+}
+
+if (require.main === module) {
+  (async function() {
+    try {
+      await knex.schema.dropTableIfExists('user')
+      await knex.schema.dropTableIfExists('login')
+      await initTables()
+
+      const user = 'admin'
+      const salt = hpass.salt48()
+      await knex('user').insert({
+        name: user,
+        salt: salt,
+        hashpass: hpass.hashpass(user, 'changeme!', salt),
+        created_at: knex.fn.now()
+      })
+
+      console.log(await exports.getUser('admin'))
+
+      console.log('done')
+      process.exit()
+
+    } catch (err) {
+      console.error(err.toString())
+    }
+  })()
+}
