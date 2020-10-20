@@ -1,50 +1,66 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
-const path = require('path');
+const path = require('path')
 
-const jwt_verify = require('./middleware.js').jwt_verify
-const jwt_login = require('./auth-jwt.js').login
+const authJWT = require('./auth-jwt.js')
+const middleware = require('./middleware.js')
 
-/* set up http server */
-const app = express()
-const port = 19721
-app.use(bodyParser.json())
-app.use(cookieParser())
+/* create JWT verify middleware */
+let jwt_verify = middleware.reject
 
-app.listen(port)
-console.log(`Listening at port ${port}.`)
+/* set up secret server */
+const secretd = express()
+const secret_port = 64264
 
-app
-.post('/login/jwt', async function (req, res) {
-  const reqJson = req.body || {}
-  const username = reqJson.username || ''
-  const password = reqJson.password || ''
-  const debug = reqJson.debug || false
+secretd.get('/', function(req, res) { res.send(authJWT.getJWTSecret()) })
+secretd.listen(secret_port, async function() {
 
-  const [pass, msg] = await jwt_login(username, password, debug)
-  console.log(pass ? 'passed' : 'failed', msg)
+  console.log('Secretd ready at port', secret_port)
+  jwt_verify = await middleware.jwt_verifier(`http://localhost:${secret_port}/`)
 
-  if (pass) {
-    res.cookie('lattice-jwt-token', msg.token, {
-      maxAge: msg.info.maxAge * 1000,
-      httpOnly: false /* prohibit js access to this cookie */
-    })
-  }
+  /* set up http server */
+  const app = express()
+  const port = 19721
 
-  res.json({ pass, msg })
-})
+  app.use(bodyParser.json())
+  app.use(cookieParser())
 
-.post('/verify/jwt', jwt_verify, function (req, res) {
-  res.json({
-    'pass': true
+  app.listen(port)
+  console.log(`Listening at port ${port}.`)
+
+  app
+  .post('/login/jwt', async function (req, res) {
+    const reqJson = req.body || {}
+    const username = reqJson.username || ''
+    const password = reqJson.password || ''
+    const debug = reqJson.debug || false
+
+    const [pass, msg] = await authJWT.login(username, password, debug)
+    console.log(pass ? 'passed' : 'failed', msg)
+
+    if (pass) {
+      res.cookie('lattice-jwt-token', msg.token, {
+        maxAge: msg.info.maxAge * 1000,
+        httpOnly: false /* prohibit js access to this cookie */
+      })
+    }
+
+    res.json({ pass, msg })
   })
-})
 
-/* some test routings */
-.get('/login', async function (req, res) {
-  res.sendFile(path.resolve('./test/login.html'))
-})
-.get('/forbidden/*', jwt_verify, async function (req, res) {
-  res.send('<b>This is a forbidden place!</b>')
+  .post('/verify/jwt', jwt_verify, function (req, res) {
+    res.json({
+      'pass': true
+    })
+  })
+
+  /* some test routings */
+  .get('/login', async function (req, res) {
+    res.sendFile(path.resolve('./test/login.html'))
+  })
+  .get('/forbidden/*', jwt_verify, async function (req, res) {
+    res.send('<b>This is a forbidden place!</b>')
+  })
+
 })

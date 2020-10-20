@@ -61,7 +61,7 @@ if (require.main === module) {
       await initTables()
 
       const user = 'admin'
-      const salt = hpass.salt48()
+      const salt = hpass.randomHex(48)
       await knex('user').insert({
         name: user,
         salt: salt,

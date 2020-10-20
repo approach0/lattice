@@ -1,36 +1,47 @@
+const axios = require('axios')
 const auth_jwt = require('./auth-jwt.js')
 const loginUrl = '/login?next=<url>'
 
-exports.no_verify = function(req, res, next) {
-  return next()
+exports.reject = function (req, res, next) {
+  const originUrlEncoded = encodeURIComponent(req.url || '/')
+  const redirectUrl = loginUrl.replace('<url>', originUrlEncoded)
+  const reqContentType = req.accepts('html', 'json')
+    console.log('REJECT')
+
+  if (reqContentType == 'json') {
+    /* handle POST request rejection */
+    res.json({
+      'pass': false,
+      'redirect': redirectUrl
+    })
+  } else {
+    /* GET/HEAD request, send 302 code */
+    res.redirect(redirectUrl)
+  }
 }
 
-exports.jwt_verify = function(req, res, next) {
-  const token = req.cookies['lattice-jwt-token'] || ''
-  const originUrl = req.url
-  const originUrlEncoded = encodeURIComponent(originUrl)
-  const redirectUrl = loginUrl.replace('<url>', originUrlEncoded)
+exports.jwt_verifier = async function(jwt_secret_url) {
+  const url = jwt_secret_url
+  let secret = ''
+  try {
+    const response = await axios.get(url)
+    secret = response.data
+  } catch (err) {
+    console.error('failed to obtain secret from', url)
+    console.error(err.toString())
+  }
 
-  auth_jwt.verify(token)
-  .then(ret => {
-    const [pass, info] = ret
-    if (pass) {
-      next()
+  return function (req, res, next) {
+    const token = req.cookies['lattice-jwt-token'] || ''
 
-    } else {
-      /* failed verification */
-      const reqContentType = req.accepts('html', 'json')
-      if (reqContentType == 'json') {
-        /* POST request, send redirect info */
-        res.json({
-          'pass': false,
-          'redirect': redirectUrl,
-          'msg': info
-        })
+    auth_jwt.verify(token, secret).then(ret => {
+      const [pass, msg] = ret
+      console.log(pass ? 'passed' : 'failed', msg)
+      if (pass) {
+        next()
       } else {
-        /* GET/HEAD request, send 302 code */
-        res.redirect(redirectUrl)
+        exports.reject(req, res, next)
       }
-    }
-  })
+    })
+  }
 }

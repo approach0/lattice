@@ -2,7 +2,8 @@ const jwt = require('jsonwebtoken')
 const hpass = require('./hashpass')
 const db = require('./db.js')
 
-const inmemo_user2pass = {}
+/* for security, jwt_secret is suggested to be greater than 256 bytes */
+const jwt_secret = hpass.randomHex(2048)
 
 function epoch2secs() {
   return Math.floor(new Date().getTime() / 1000)
@@ -16,10 +17,14 @@ function days2secs(n) {
   return n * 3600 * 24
 }
 
+exports.getJWTSecret = function() {
+  return jwt_secret
+}
+
 exports.login = async function(username, passwd, debug) {
   username = username || ''
   passwd = passwd || ''
-  console.log('[login]', username)
+  console.log('[login user]', username)
 
   let errmsg = 'wrong password.'
   try {
@@ -41,9 +46,8 @@ exports.login = async function(username, passwd, debug) {
         scope: ['/*']
       }
       const algorithm = {algorithm: 'HS256'}
-      const token = jwt.sign(info, passwd, algorithm)
+      const token = jwt.sign(info, jwt_secret, algorithm)
 
-      inmemo_user2pass[username] = passwd
       await db.recordLogin(username, true)
       return [true, {info, algorithm, token}]
 
@@ -59,9 +63,10 @@ exports.login = async function(username, passwd, debug) {
   return [false, errmsg]
 }
 
-exports.verify = async function(token) {
+exports.verify = async function(token, secret) {
   token = token || ''
-  console.log('[verify]', token)
+  secret = secret || ''
+  console.log('[verify token]', token)
 
   try {
     if (token === '') {
@@ -71,13 +76,8 @@ exports.verify = async function(token) {
     const decTok = jwt.decode(token)
     const username = decTok['loggedInAs'] || '';
     const scope = decTok['scope'] || []
-    const passwd = inmemo_user2pass[username];
 
-    if (passwd === undefined) {
-      throw new Error(`No such user: '${username}'`)
-    }
-
-    jwt.verify(token, passwd)
+    jwt.verify(token, secret)
     return [true, decTok]
 
   } catch (err) {

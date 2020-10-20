@@ -8,6 +8,10 @@ exports.hashpass = function(user, passwd, salt) {
   return hash256(passwd + salt + user)
 }
 
-exports.salt48 = function() {
-  return crypto.randomBytes(6).toString("hex")
+exports.randomHex = function(nBytes) {
+  return crypto.randomBytes(nBytes).toString("hex")
+}
+
+if (require.main === module) {
+  console.log(exports.randomHex(2048))
 }
