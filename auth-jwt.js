@@ -19,8 +19,9 @@ function days2secs(n) {
 exports.login = async function(username, passwd, debug) {
   username = username || ''
   passwd = passwd || ''
-  let errmsg = 'wrong password.'
+  console.log('[login]', username)
 
+  let errmsg = 'wrong password.'
   try {
     const usr = await db.getUser(username)
 
@@ -60,6 +61,8 @@ exports.login = async function(username, passwd, debug) {
 
 exports.verify = async function(token) {
   token = token || ''
+  console.log('[verify]', token)
+
   try {
     if (token === '') {
       throw new Error(`No token to be verified.`)

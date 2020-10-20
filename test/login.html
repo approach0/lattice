@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Example Login</title>
+<title>Login</title>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
 <script>
 $(document).ready(function () {
@@ -18,7 +18,7 @@ $(document).ready(function () {
       })
     }).done(function (ret) {
       $("#retjson").text(JSON.stringify(ret, null, 2))
-      if (ret.pass) {
+      if (ret.pass && !$(":checkbox").is(":checked")) {
         setTimeout(function () {
           window.location.replace(getNextURL())
         }, 1000)
@@ -43,7 +43,8 @@ $(document).ready(function () {
 </script>
 </head>
 <body>
-<h3>Login</h3>
+<h3>Example login page</h3>
+  <p>Disable redirection: <input type="checkbox"/></p>
   <input  id="username" placeholder="user name"/>
   <input type="password" id="password" placeholder="password"/>
   <button id="login">login</button>

@@ -22,13 +22,12 @@ app
   const password = reqJson.password || ''
   const debug = reqJson.debug || false
 
-  console.log('[USER login]', username)
   const [pass, msg] = await jwt_login(username, password, debug)
-
   console.log(pass ? 'passed' : 'failed', msg)
+
   if (pass) {
     res.cookie('lattice-jwt-token', msg.token, {
-      maxAge: msg.info.maxAge,
+      maxAge: msg.info.maxAge * 1000,
       httpOnly: false /* prohibit js access to this cookie */
     })
   }
