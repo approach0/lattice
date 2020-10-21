@@ -2,9 +2,10 @@ const Knex = require('knex')
 const hpass = require('./hashpass')
 
 const knex = Knex({
+  const host = process.env.LATTICE_DATABASE_HOST || 'localhost'
   client: 'pg',
   connection: {
-    host: '0.0.0.0',
+    host: host,
     user: 'postgres',
     password: 'postgres',
     database: 'postgres'
