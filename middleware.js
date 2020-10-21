@@ -6,7 +6,6 @@ exports.reject = function (req, res, next) {
   const originUrlEncoded = encodeURIComponent(req.url || '/')
   const redirectUrl = loginUrl.replace('<url>', originUrlEncoded)
   const reqContentType = req.accepts('html', 'json')
-    console.log('REJECT')
 
   if (reqContentType == 'json') {
     /* handle POST request rejection */
