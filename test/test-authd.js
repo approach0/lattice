@@ -1,7 +1,14 @@
 const axios = require('axios')
+const { program } = require('commander')
+
+program
+  .option('--host <host>', 'specify the host')
+program.parse(process.argv)
+
+const host = program.host || 'http://localhost:19721'
 
 ;(async function() {
-  const cookie = await axios.post('http://localhost:19721/login/jwt',
+  const cookie = await axios.post(`${host}/login/jwt`,
     {
       username: 'admin',
       password: 'changeme!',
@@ -15,7 +22,7 @@ const axios = require('axios')
   })
 
   console.log(cookie)
-  await axios.post('http://localhost:19721/verify/jwt',
+  await axios.post(`${host}/verify/jwt`,
     { foo: 'foo', bar: 'bar'},
     {
       headers: {
