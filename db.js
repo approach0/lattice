@@ -1,8 +1,9 @@
 const Knex = require('knex')
 const hpass = require('./hashpass')
+const host = process.env.LATTICE_DATABASE_HOST || 'localhost'
 
+console.log(`To connect database at ${host}`)
 const knex = Knex({
-  const host = process.env.LATTICE_DATABASE_HOST || 'localhost'
   client: 'pg',
   connection: {
     host: host,

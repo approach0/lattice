@@ -9,22 +9,21 @@ const middleware = require('./middleware.js')
 /* create JWT verify middleware */
 let jwt_verify = middleware.reject
 
-/* set up secret server */
+/* JWT token server */
 const secretd = express()
 const secret_port = 64264
 
+/* JWT login server */
+const app = express()
+const port = 19721
+app.use(bodyParser.json())
+app.use(cookieParser())
+
 secretd.get('/', function(req, res) { res.send(authJWT.getJWTSecret()) })
 secretd.listen(secret_port, async function() {
+  console.log('JWT token served at port', secret_port)
 
-  console.log('Secretd ready at port', secret_port)
   jwt_verify = await middleware.jwt_verifier(`http://localhost:${secret_port}/`)
-
-  /* set up http server */
-  const app = express()
-  const port = 19721
-
-  app.use(bodyParser.json())
-  app.use(cookieParser())
 
   app.listen(port)
   console.log(`Listening at port ${port}.`)
