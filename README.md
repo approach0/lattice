@@ -9,7 +9,7 @@ However the way this project is naming itself, has nothing to do with lattice. T
 2. Install packages and create the initial user `admin` (with factory-setting password `changeme!`)
 ```
 $ npm install
-$ node db.js
+$ node db.js --init
 ```
 
 3. setup lattice server:

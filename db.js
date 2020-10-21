@@ -54,28 +54,40 @@ exports.recordLogin = async function(name, success) {
 }
 
 if (require.main === module) {
-  (async function() {
-    try {
-      await knex.schema.dropTableIfExists('user')
-      await knex.schema.dropTableIfExists('login')
-      await initTables()
+  const { program } = require('commander')
+  program
+    .option('--init', 'initialized database and create user "admin"')
+    .option('--password <password>', 'set password for user "admin"')
+  program.parse(process.argv)
 
-      const user = 'admin'
-      const salt = hpass.randomHex(48)
-      await knex('user').insert({
-        name: user,
-        salt: salt,
-        hashpass: hpass.hashpass(user, 'changeme!', salt),
-        created_at: knex.fn.now()
-      })
+  if (program.init) {
+    (async function() {
+      try {
+        await knex.schema.dropTableIfExists('user')
+        await knex.schema.dropTableIfExists('login')
+        await initTables()
 
-      console.log(await exports.getUser('admin'))
+        const user = 'admin'
+        const pass = program.password || 'changeme!'
+        const salt = hpass.randomHex(16)
+        await knex('user').insert({
+          name: user,
+          salt: salt,
+          hashpass: hpass.hashpass(user, pass, salt),
+          created_at: knex.fn.now()
+        })
 
-      console.log('done')
-      process.exit()
+        console.log(await exports.getUser('admin'))
 
-    } catch (err) {
-      console.error(err.toString())
-    }
-  })()
+        console.log('done')
+        process.exit()
+
+      } catch (err) {
+        console.error(err.toString())
+      }
+    })()
+
+  } else {
+    program.help()
+  }
 }
