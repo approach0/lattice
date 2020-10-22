@@ -8,7 +8,6 @@ $(document).ready(function () {
   $("#login").click(function() {
     var stop = $("#ck_stop").is(":checked")
     var long = $("#ck_long").is(":checked")
-    console.log(stop, long)
 
     $.ajax({
       method: "POST",

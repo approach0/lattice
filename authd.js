@@ -56,6 +56,9 @@ secretd.listen(secret_port, async function() {
   })
 
   /* some test routings */
+  .get('/', async function (req, res) {
+    res.send('<h2>Lattice at your service<h2>')
+  })
   .get('/login', async function (req, res) {
     res.sendFile(path.resolve('./test/login.html'))
   })
