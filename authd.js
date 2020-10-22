@@ -39,7 +39,8 @@ secretd.listen(secret_port, async function() {
     console.log(pass ? 'passed' : 'failed', msg)
 
     if (pass) {
-      res.cookie('lattice-jwt-token', msg.token, {
+      const key = authJWT.JWT_token_key
+      res.cookie(key, msg.token, {
         maxAge: msg.info.maxAge * 1000,
         httpOnly: false /* prohibit js access to this cookie */
       })

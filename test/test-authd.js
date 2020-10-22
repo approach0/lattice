@@ -16,24 +16,29 @@ const host = program.host || 'http://localhost:19721'
     }
   ).then(res => {
     console.log(res.data)
-    return res.headers['set-cookie'][0]
+    const cookies = res.headers['set-cookie']
+    if (cookies) return cookies[0]
   }).catch(err => {
     console.error(err.toString())
   })
 
-  console.log(cookie)
-  await axios.post(`${host}/verify/jwt`,
-    { foo: 'foo', bar: 'bar'},
-    {
-      headers: {
-        Cookie: cookie
+  if (cookie) {
+    console.log('Cookie:', cookie)
+    await axios.post(`${host}/verify/jwt`,
+      { foo: 'foo', bar: 'bar'},
+      {
+        headers: {
+          Cookie: cookie
+        }
       }
-    }
 
-  ).then(res => {
-    console.log(res.data)
-  }).catch(err => {
-    console.error(err.toString())
-  })
+    ).then(res => {
+      console.log(res.data)
+    }).catch(err => {
+      console.error(err.toString())
+    })
+  } else {
+    console.error('no cookie set.')
+  }
 
 })()

@@ -17,6 +17,8 @@ function days2secs(n) {
   return n * 3600 * 24
 }
 
+exports.JWT_token_key = 'latticejwt'
+
 exports.getJWTSecret = function() {
   return jwt_secret
 }

@@ -31,7 +31,8 @@ exports.jwt_verifier = async function(jwt_secret_url) {
   }
 
   return function (req, res, next) {
-    const token = req.cookies['lattice-jwt-token'] || ''
+    const key = auth_jwt.JWT_token_key
+    const token = req.cookies[key] || ''
 
     auth_jwt.verify(token, secret).then(ret => {
       const [pass, msg] = ret

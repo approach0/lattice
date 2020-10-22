@@ -6,6 +6,10 @@
 <script>
 $(document).ready(function () {
   $("#login").click(function() {
+    var stop = $("#ck_stop").is(":checked")
+    var long = $("#ck_long").is(":checked")
+    console.log(stop, long)
+
     $.ajax({
       method: "POST",
       url:"./login/jwt",
@@ -14,11 +18,11 @@ $(document).ready(function () {
       data: JSON.stringify({
         username: $("#username").val(),
         password: $("#password").val(),
-        debug: true
+        debug: !long
       })
     }).done(function (ret) {
       $("#retjson").text(JSON.stringify(ret, null, 2))
-      if (ret.pass && !$(":checkbox").is(":checked")) {
+      if (ret.pass && !stop) {
         setTimeout(function () {
           window.location.replace(getNextURL())
         }, 1000)
@@ -44,7 +48,8 @@ $(document).ready(function () {
 </head>
 <body>
 <h3>Example login page</h3>
-  <p>Disable redirection: <input type="checkbox"/></p>
+  <p>Disable redirection: <input type="checkbox" id="ck_stop"/></p>
+  <p>Long-live cookie: <input type="checkbox" id="ck_long"/></p>
   <input  id="username" placeholder="user name"/>
   <input type="password" id="password" placeholder="password"/>
   <button id="login">login</button>
