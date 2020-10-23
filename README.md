@@ -10,6 +10,7 @@ However this project is naming itself this way, has nothing to do with lattice. 
 2. Install packages and setup lattice server:
 ```
 $ npm install
+$ node db.js --init
 $ node ./authd.js
 ```
 
