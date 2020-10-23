@@ -6,21 +6,24 @@ However the way this project is naming itself, has nothing to do with lattice. T
 ## Usage
 1. Start a database server at `localhost`.
 
-2. Install packages and create the initial user `admin` (with factory-setting password `changeme!`)
+2. Install packages and setup lattice server:
 ```
 $ npm install
-$ node db.js --init
-```
-
-3. setup lattice server:
-```
 $ node ./authd.js
 ```
-you can test the service by
+
+3. Test and change passowrd
+Test the service by
 ```
 $ node test/test-authd.js
 ```
 
-To connect to host at different address than `localhost`, set environment variable `LATTICE_DATABASE_HOST`.
+Change the initial user `admin` password (with factory-setting password `changeme!`)
+```
+$ node db.js --reset --password <YOUR_PASSWORD>
+```
 
-4. Finally, visit `http://localhost:19721/forbidden/whatever/place` in your browser.
+4. Visit `http://localhost:19721/forbidden/whatever/place` in your browser.
+
+## Environment variable
+To connect to host at different address than `localhost`, set environment variable `LATTICE_DATABASE_HOST`.
