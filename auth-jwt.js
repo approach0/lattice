@@ -30,13 +30,13 @@ exports.login = async function(ip, username, passwd, debug) {
   username = username || ''
   passwd = passwd || ''
   console.log('[login user]', username)
-  let past_attempts = max_attempts /* assume max to be safe */
+  let left_chances = -1 /* negative indicates an unknown number */
 
   let errmsg = 'wrong password.'
   try {
     //const loginAttempts = await db.lastLogins(ip, username, 1) /* debug */
     const loginAttempts = await db.lastLogins(ip, username, 24 * 60) /* production */
-    past_attempts  = loginAttempts.length
+    const past_attempts  = loginAttempts.length
     console.log('[failed attempts]', past_attempts)
 
     if (past_attempts >= max_attempts) {
@@ -70,6 +70,7 @@ exports.login = async function(ip, username, passwd, debug) {
 
     } else {
       await db.recordLogin(ip, username, false)
+      left_chances = Math.max(max_attempts - past_attempts - 1, 0)
     }
 
   } catch (err) {
@@ -77,7 +78,6 @@ exports.login = async function(ip, username, passwd, debug) {
     errmsg = err.toString()
   }
 
-  const left_chances = Math.max(max_attempts - past_attempts - 1, 0)
   return [false, {errmsg, left_chances}]
 }
 
