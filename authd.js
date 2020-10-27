@@ -34,9 +34,10 @@ secretd.listen(secret_port, async function() {
     const username = reqJson.username || ''
     const password = reqJson.password || ''
     const debug = reqJson.debug || false
+    const ip_addr = req.headers['x-real-ip'] ?  req.headers['x-real-ip'] : req.ip
 
-    const [pass, msg] = await authJWT.login(username, password, debug)
-    console.log(pass ? 'passed' : 'failed', msg)
+    const [pass, msg] = await authJWT.login(ip_addr, username, password, debug)
+    console.log(pass ? 'passed' : 'failed:', msg)
 
     if (pass) {
       const key = authJWT.JWT_token_key

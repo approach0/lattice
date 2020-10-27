@@ -29,7 +29,7 @@ async function createTable(name, schema) {
 
 async function initTables() {
   await createTable('user', function(table) {
-    table.string('name', 63).unique()
+    table.string('name', 63).notNullable().unique()
     table.string('salt', 255).notNullable()
     table.string('hashpass', 255).notNullable()
     table.timestamps()
@@ -38,7 +38,8 @@ async function initTables() {
 
   await createTable('login', function(table) {
     table.increments('id').primary()
-    table.string('name').unsigned().notNullable()
+    table.string('from').notNullable()
+    table.string('name').notNullable()
     table.boolean('success').notNullable()
     table.datetime('datetime')
   })
@@ -62,11 +63,21 @@ exports.getUser = async function(name) {
   return knex('user').where('name', name).first()
 }
 
-exports.recordLogin = async function(name, success) {
+exports.recordLogin = async function(from, name, success) {
   return knex('login').insert({
-    name, success,
+    from, name, success,
     datetime: knex.fn.now()
   })
+}
+
+/* return last failed logins attempts from user in last minutes */
+exports.lastLogins = async function(from, name, minutes) {
+  const timesplit = new Date(Date.now() - minutes * 60 * 1000)
+  return knex('login')
+    .where('name', name)
+    .where('from', from)
+    .where('success', false)
+    .where('datetime', '>=', timesplit)
 }
 
 if (require.main === module) {
