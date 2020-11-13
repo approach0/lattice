@@ -42,7 +42,7 @@ secretd.listen(secret_port, async function() {
     if (pass) {
       const key = authJWT.JWT_token_key
       res.cookie(key, msg.token, {
-        maxAge: msg.info.maxAge * 1000,
+        maxAge: msg.info.maxAge * 1000, /* maxAge is in milliseconds */
         httpOnly: false /* prohibit js access to this cookie */
       })
     }

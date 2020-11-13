@@ -58,7 +58,7 @@ exports.login = async function(ip, username, passwd, debug) {
       const later = debug ? seconds(10) : days2secs(1)
       const info = {
         exp: epoch + later,
-        maxAge: later,
+        maxAge: later, /* maxAge is in seconds */
         loggedInAs: username,
         scope: ['/*']
       }
