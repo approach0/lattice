@@ -55,7 +55,7 @@ exports.login = async function(ip, username, passwd, debug) {
 
     if (hashpass === usr.hashpass) {
       const epoch = epoch2secs()
-      const later = debug ? seconds(10) : days2secs(3)
+      const later = debug ? seconds(10) : days2secs(1)
       const info = {
         exp: epoch + later,
         maxAge: later,
